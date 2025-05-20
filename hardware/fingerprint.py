@@ -3,11 +3,11 @@ import serial
 from pyfingerprint.pyfingerprint import PyFingerprint
 
 class FingerprintScanner:
-    def __init__(self, port='/dev/ttyAMA0', baudrate=57600):
+    def __init__(self, port='/dev/serial0', baudrate=57600):
         """
         Initialize fingerprint scanner with serial connection
         Args:
-            port: Serial port (default '/dev/ttyAMA0' for Raspberry Pi)
+            port: Serial port (default '/dev/serial0' for Raspberry Pi)
             baudrate: Serial baudrate (default 57600)
         """
         try:
