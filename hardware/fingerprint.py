@@ -1,37 +1,36 @@
 import time
-import adafruit_fingerprint
 import serial
-import busio
-import board
+from pyfingerprint.pyfingerprint import PyFingerprint
 
 class FingerprintScanner:
-    def __init__(self, uart_tx="TX", uart_rx="RX", baudrate=57600):
+    def __init__(self, port='/dev/ttyAMA0', baudrate=57600):
         """
-        Initialize fingerprint scanner with UART connection
+        Initialize fingerprint scanner with serial connection
         Args:
-            uart_tx: TX pin name (default "TX")
-            uart_rx: RX pin name (default "RX")
-            baudrate: UART baudrate (default 57600)
+            port: Serial port (default '/dev/ttyAMA0' for Raspberry Pi)
+            baudrate: Serial baudrate (default 57600)
         """
-        # Use board pins for UART
-        tx_pin = getattr(board, uart_tx)
-        rx_pin = getattr(board, uart_rx)
-        uart = busio.UART(tx_pin, rx_pin, baudrate=baudrate)
-        self.finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
-        
-        if not self.finger.read_templates():
-            raise RuntimeError("[FINGERPRINT] Failed to read templates")
-        
-        print(f"[FINGERPRINT] Found {self.finger.templates} fingerprint templates")
-        print("[FINGERPRINT] Scanner initialized successfully")
-        self._next_location = self.finger.templates + 1
+        try:
+            # Enable UART on Raspberry Pi
+            self.finger = PyFingerprint(port, baudrate)
+            if not self.finger.verifyPassword():
+                raise RuntimeError("[FINGERPRINT] Failed to verify password")
+            
+            print(f"[FINGERPRINT] Found {self.finger.getTemplateCount()} fingerprint templates")
+            print("[FINGERPRINT] Scanner initialized successfully")
+            self._next_location = self.finger.getTemplateCount() + 1
+        except Exception as e:
+            raise RuntimeError(f"[FINGERPRINT] Failed to initialize: {str(e)}")
 
     def _get_fingerprint(self):
         """Get a fingerprint image and template it"""
         for _ in range(3):  # Try 3 times
-            if self.finger.get_image() == adafruit_fingerprint.OK:
-                if self.finger.image_2_tz(1) == adafruit_fingerprint.OK:
-                    return True
+            try:
+                if self.finger.readImage():
+                    if self.finger.convertImage(0x01):
+                        return True
+            except Exception as e:
+                print(f"[FINGERPRINT] Error reading fingerprint: {str(e)}")
             time.sleep(1)
         return False
 
@@ -54,15 +53,16 @@ class FingerprintScanner:
         if not self._get_fingerprint():
             return None
 
-        if self.finger.create_model() != adafruit_fingerprint.OK:
-            return None
-
-        location = self._next_location
-        if self.finger.store_model(location) != adafruit_fingerprint.OK:
-            return None
-
-        self._next_location += 1
-        return location
+        try:
+            if self.finger.createTemplate():
+                location = self._next_location
+                if self.finger.storeTemplate(location):
+                    self._next_location += 1
+                    return location
+        except Exception as e:
+            print(f"[FINGERPRINT] Error enrolling fingerprint: {str(e)}")
+        
+        return None
 
     def authenticate_fingerprint(self):
         """
@@ -74,7 +74,10 @@ class FingerprintScanner:
         if not self._get_fingerprint():
             return None
 
-        if self.finger.finger_search() != adafruit_fingerprint.OK:
-            return None
-
-        return self.finger.finger_id
+        try:
+            if self.finger.searchTemplate():
+                return self.finger.getTemplateIndex()
+        except Exception as e:
+            print(f"[FINGERPRINT] Error authenticating fingerprint: {str(e)}")
+        
+        return None
