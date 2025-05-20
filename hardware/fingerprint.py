@@ -3,16 +3,17 @@ import serial
 from pyfingerprint.pyfingerprint import PyFingerprint
 
 class FingerprintScanner:
-    def __init__(self, port='/dev/serial0', baudrate=57600):
+    def __init__(self, port='/dev/serial0', baudrate=9600):
         """
         Initialize fingerprint scanner with serial connection
         Args:
             port: Serial port (default '/dev/serial0' for Raspberry Pi)
-            baudrate: Serial baudrate (default 57600)
+            baudrate: Serial baudrate (default 9600)
         """
         try:
-            # Enable UART on Raspberry Pi
+            print(f"[FINGERPRINT] Attempting to connect to {port} at {baudrate} baud")
             self.finger = PyFingerprint(port, baudrate)
+            print("[FINGERPRINT] Connected to sensor, verifying password...")
             if not self.finger.verifyPassword():
                 raise RuntimeError("[FINGERPRINT] Failed to verify password")
             
@@ -20,6 +21,7 @@ class FingerprintScanner:
             print("[FINGERPRINT] Scanner initialized successfully")
             self._next_location = self.finger.getTemplateCount() + 1
         except Exception as e:
+            print(f"[FINGERPRINT] Detailed error: {str(e)}")
             raise RuntimeError(f"[FINGERPRINT] Failed to initialize: {str(e)}")
 
     def _get_fingerprint(self):
