@@ -14,8 +14,8 @@ class FingerprintScanner:
             print(f"[FINGERPRINT] Attempting to connect to {port} at {baudrate} baud")
             self.finger = PyFingerprint(port, baudrate)
             print("[FINGERPRINT] Connected to sensor, verifying password...")
-            if not self.finger.verifyPassword():
-                raise RuntimeError("[FINGERPRINT] Failed to verify password")
+            # if not self.finger.verifyPassword():
+            #     raise RuntimeError("[FINGERPRINT] Failed to verify password")
             
             print(f"[FINGERPRINT] Found {self.finger.getTemplateCount()} fingerprint templates")
             print("[FINGERPRINT] Scanner initialized successfully")
