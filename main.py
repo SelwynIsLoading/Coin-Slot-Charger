@@ -95,7 +95,7 @@ def handle_session(slot_number):
             relay = RelayController(relay_pin)
             relay.turn_on()
             ui.update_status("Access granted. Charging started!")
-            time.sleep(10)  # Simulated charge time
+            time.sleep(300)  # 5 minutes default charging time
             relay.turn_off()
             ui.update_status(f"Charging complete for Slot {slot_number}.")
         finally:

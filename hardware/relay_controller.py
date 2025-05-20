@@ -1,10 +1,6 @@
 # hardware/relay_controller.py
 
-try:
-    import RPi.GPIO as GPIO
-except ImportError:
-    from hardware import gpio_mock as GPIO
-
+import RPi.GPIO as GPIO
 import time
 
 class RelayController:

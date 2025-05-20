@@ -1,10 +1,6 @@
 # hardware/coin_slot.py
 
-try:
-    import RPi.GPIO as GPIO
-except ImportError:
-    from hardware import gpio_mock as GPIO
-
+import RPi.GPIO as GPIO
 import time
 
 class CoinSlot:
@@ -22,6 +18,5 @@ class CoinSlot:
             time.sleep(0.1)
 
     def get_coin_value(self):
-        # Simulate only 5 pesos for now
-        print("[COIN SLOT] Simulated: 5 pesos inserted.")
-        return 5
+        # TODO: Implement actual coin value detection based on hardware
+        raise NotImplementedError("Coin value detection not implemented")
